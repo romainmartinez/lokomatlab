@@ -14,5 +14,12 @@
 clear variables; clc; close all
 
 dataPath = '/home/romain/Downloads/lokomatlab';
+
+% data preparation & transformation
 xi = lkmtlb.preprocessing(dataPath);
+
+lkmtlb.stats(xi.data)
+
+
+
 
