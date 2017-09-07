@@ -6,6 +6,8 @@ classdef preprocessing < handle
     properties (Access = private)
         dataPath    % folder containing data
         fileNames   % data files
+        var         % degrees of freedom (name)
+        ivar        % degree of freedom (integers)
     end % private properties
     
     properties
@@ -59,58 +61,71 @@ classdef preprocessing < handle
                 error('invalid filename (pre or post not find)')
             end
             
-            
             % get raw data
             load(sprintf('%s/%s', self.dataPath, ifile))
-            raw = c.results.MeanLeg.angAtFullCycle;
             
             % transform data into user & spm friendly
-            self.transformData(raw, group, iparticipant);
+            self.transformData(c, group, iparticipant);
             
         end % loadData
         
         %-------------------------------------------------------------------------%
         function transformData(self, raw, group, iparticipant)
-            % get DoF
-            fields = fieldnames(raw);
-            DoF = 1:3;
             
-            % initialize struct
             if isempty(self.data)
-                outputFields = {'y', 'dof', 'group', 'participant'};
+                % DOF
+                self.var = {'thorax_X', 'thorax_Y', 'thorax_Z',...
+                'pelvis_X', 'pelvis_Y', 'pelvis_Z',...
+                'hip_X', 'hip_Y', 'hip_Z',... right
+                'hip_X', 'hip_Y', 'hip_Z',... left
+                'knee_X', 'knee_Y',... right
+                'knee_X', 'knee_Y',... left
+                'ankle_Z',... right
+                'ankle_Z',... left
+                'footprogress_Z',... right
+                'footprogress_Z'}; % left
+                [~, ~, self.ivar] = unique(self.var, 'stable');
+                
+                % initialize struct
+                outputFields = {'y', 'var', 'group', 'participant'};
                 self.data = cell2struct(cell(length(outputFields), 1), outputFields);
             end
             
-            for ifield = fields'
-                self.data.y = vertcat(self.data.y, raw.(ifield{:}){1, 1}');
-                self.data.group = cat(2, self.data.group, repmat(group, 1, 3));
-                self.data.dof = cat(2, self.data.dof, DoF);
-                self.data.participant = cat(2, self.data.participant, repmat(iparticipant, 1, 3));
-                
-                % increment DoF
-                DoF = DoF + 3;
-            end
+            % data
+            self.data.y = [self.data.y ...
+            raw.results.MeanLeg.angAtFullCycle.Thorax{1, 1}(:,1:3) ...    thorax_X, thorax_Y, thorax_Z
+            raw.results.MeanLeg.angAtFullCycle.Pelvis{1, 1}(:,1:3) ...    pelvis_X, pelvis_Y, pelvis_Z
+            raw.results.Right.angAtFullCycle.RHip{1, 1}(:,1:3) ...        right hip_X, hip_Y, hip_Z
+            raw.results.Left.angAtFullCycle.LHip{1, 1}(:,1:3) ...         left hip_X, hip_Y, hip_Z
+            raw.results.Right.angAtFullCycle.RKnee{1, 1}(:,1:2) ...       right knee_X, knee_Y
+            raw.results.Left.angAtFullCycle.LKnee{1, 1}(:,1:2) ...        left knee_X, knee_Y
+            raw.results.Right.angAtFullCycle.RAnkle{1, 1}(:,3) ...        right ankle_Z
+            raw.results.Left.angAtFullCycle.LAnkle{1, 1}(:,3) ...         left ankle_Z
+            raw.results.Right.angAtFullCycle.RFootProgress{1, 1}(:,3) ... right footProgress_Z
+            raw.results.Left.angAtFullCycle.LFootProgress{1, 1}(:,3) ...  left footProgress_Z
+            ];
+        
+            % group
+            self.data.group = cat(2, self.data.group, repmat(group, 1, numel(self.var)));
+            
+            % var
+            self.data.var = cat(2, self.data.var, self.ivar');
+            
+            % participant
+            self.data.participant = cat(2, self.data.participant, repmat(iparticipant, 1, numel(self.var)));
         end
         
         function getNomenclature(self)
-            % DoF names
-            A = {'hip', 'knee', 'ankle', 'footProgress', 'thorax', 'pelvis'};
-            B = {'X', 'Y', 'Z'};
-            C = strcat(repmat(A, numel(B), 1), repmat(B', 1, numel(A)));
-            dof = C(:)';
-            
+            % DoF names = self.var
+            variable = unique(self.var, 'stable');
             % group names
             group = {'pre', 'post'};
             
-            % participants names
-            participants = num2cell(self.data.participant);
-            participants = cellfun(@(x) strcat('patient_', num2str(x)), participants, 'UniformOutput', false);
-            
             self.nomenclature = table(...
-                participants',...
+                self.data.participant',...
                 group(self.data.group)',...
-                dof(self.data.dof)',...
-                'VariableNames', {'participant', 'group', 'dof'}...
+                variable(self.data.var)',...
+                'VariableNames', {'participant', 'group', 'var'}...
                 );
         end
         
