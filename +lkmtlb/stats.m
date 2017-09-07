@@ -41,7 +41,7 @@ classdef stats < handle
             addpath('./spm8')
             
             % run hotelling test
-            self.hotelling
+            %             self.hotelling
             
             % run post hoc tests
             self.run_postHoc;
@@ -99,7 +99,7 @@ classdef stats < handle
                 YA = self.data.y(:,self.data.var == i & self.data.group == 1)';
                 % second group
                 YB = self.data.y(:,self.data.var == i & self.data.group == 2)';
-                
+              
                 % 1) normality test
                 self.normality(YA, YB);
                 

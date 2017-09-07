@@ -21,11 +21,6 @@ output:
 | Ankle Z (*rot ext/rot int*) |
 | Foot progress Z (*rot ext/rot int*) |
 
-# Choix du test statistique
-
-## Paramétrique ou non-paramétrique
-
-
 ## Plan statistique "idéal"
 
 Paired Hotelling’s T^2^ test suivit de post hoc (paired t-test)
@@ -48,4 +43,14 @@ Paired Hotelling’s T^2^ test suivit de post hoc (paired t-test)
 
 - Solution: éviter de moyenner tous les cycles de marches pour chaque sujets (augmente le nombre d'observations) et/ou baisser le nombre de variables choisies
 
-## 
+## Paramétrique ou non-paramétrique ?
+- Un test de normalité (*Agostino-Pearson K2 test*) indique que **X des 13 variables ne suivent pas la loi normale**.
+![](./fig/normality.png)
+
+- De plus, considérant le faible nombre de participant ($n=13$), il conviendrait de choisir un test non-paramétrique
+
+## Solution temporaire 1: paired t-test non paramétriques
+**Attention**: avec les tests non-paramétrique, il n'est pas possible de distinguer la jambe droite et la jambe gauche pour les DoF correspondants (*hips, knee, ankle et foot progress*) car le nombre de permutations devient trop importants. Dans la figure qui suit, ce sont seulement les moyennes des deux jambes qui sont utilisées.
+
+
+## Solution temporaire 2: paired t-test paramétriques
