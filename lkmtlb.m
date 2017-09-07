@@ -13,12 +13,12 @@
 %}
 clear variables; clc; close all
 
-dataPath = '/home/romain/Downloads/lokomatlab';
+dataPath = '/media/romain/E/Projet_Lokomat/Enfants_CP_Yosra';
 
 % data preparation & transformation
 xi = lkmtlb.preprocessing(dataPath);
 
-lkmtlb.stats(xi.data)
+lkmtlb.stats(xi.data, 'correction', false)
 
 
 
