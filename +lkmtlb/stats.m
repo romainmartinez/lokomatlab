@@ -7,63 +7,114 @@ classdef stats < handle
     end % private properties
     
     properties
+        correction
     end % public properties
     
     %-------------------------------------------------------------------------%
     methods
         
-        function self = stats(df)
+        function self = stats(df, varargin)
+            % inputs :
+            %   correction (logical): true (default) is you want Bonferonni
+            
+            p = inputParser;
+            
+            p.addRequired('data', @isstruct);
+            p.addOptional('correction', true, @islogical);
+            
+            p.parse(df, varargin{:})
+            
+            self.data = p.Results.data;
+            self.correction = p.Results.correction;
+            
             % add spm library
             addpath('./spm8')
-            self.data = df;
             
-            % reshape data
-            [A, B] = self.reshapeData;
+            % run post hoc tests
+            self.run_postHoc;
             
-            % 1) paired Hotelling’s T2 test
-            self.hotelling(A, B)
-            
-            
-            % 2) post hoc (separate t tests on each vector component)
-            % for each post hoc test use a Bonferroni correction.
-            % for Hotelling’s T2 tests conduct separate t tests on each vector component
-            % but acknowledge that this neglects vector component covariance.
         end % constructor
         
         %-------------------------------------------------------------------------%
-        
-        function [A, B] = reshapeData(self)
-            % transform data into 3d matrix
-            % participants x frames x variables
+        function run_postHoc(self)
+            % get number of test
+            nTest = self.get_nTest;
             
-            % participants
-            n = unique(self.data.participant);
+            % get p (corrected if correction == true)
+            pCorrected = self.get_pCorrected(nTest);
             
-            % preallocate matrices
-            A = zeros(numel(n), length(self.data.y), length(unique(self.data.dof)));
-            B = A;
-            
-            for i = 1 : numel(n) % for each subject
-                % pre group
-                A(i, :, :) = self.data.y(self.data.participant == n(i) & self.data.group == 1, :)';
-                % post group
-                B(i, :, :) = self.data.y(self.data.participant == n(i) & self.data.group == 2, :)';
+            for i = 1 : nTest
+                % first group
+                YA = self.data.y(:,self.data.var == i & self.data.group == 1)';
+                % second group
+                YB = self.data.y(:,self.data.var == i & self.data.group == 2)';
+                
+%                 % 1) normality test
+%                 spm = spm1d.stats.normality.ttest_paired(YA, YB);
+%                 spmi = spm.inference(0.05);
+%                 disp(spmi)
+%                 
+%                 % plot
+%                 figure;
+%                 subplot(131);  plot(YA', 'k');  hold on;  plot(YB', 'r');  title('Data')
+%                 subplot(132);  plot(spm.residuals', 'k');  title('Residuals')
+%                 subplot(133);  spmi.plot();  title('Normality test')
+                
+                % 2) parametric ttest
+                spm = spm1d.stats.ttest_paired(YA, YB);
+                spmi = spm.inference(pCorrected, 'two_tailed', false, 'interp',true);
+                disp(spmi)
+                
+                % 3) non parametric test
+                rng(0)
+                alpha = 0.05;
+                snpm = spm1d.stats.nonparam.ttest_paired(YA, YB);
+                snpmi = snpm.inference(alpha, 'two_tailed', false, 'iterations', -1, 'force_iterations', true);
+                disp('Non-Parametric results')
+                disp(snpmi)
+                
+                % plot
+                figure('Name', num2str(i),...
+                    'Unit', 'Normalized',...
+                    'Position', [0 0 .5 1]);
+                title('coucou')
+                % mean and SD:
+                subplot(311)
+                spm1d.plot.plot_meanSD(YA, 'color','k');
+                hold on
+                spm1d.plot.plot_meanSD(YB, 'color','r');
+                title('Mean and SD')
+                
+                % parametric test
+                subplot(312)
+                spmi.plot();
+                spmi.plot_threshold_label();
+                spmi.plot_p_values();
+                title('parametric test')
+
+                % non parametric test
+                subplot(313)
+                snpmi.plot();
+                snpmi.plot_threshold_label();
+                snpmi.plot_p_values();
+                title('non parametric test')
             end
-            
-        end
+        end % run_postHoc
         
-        function hotelling(~, A, B)
-            % paired Hotelling’s T2 test
-            spm = spm1d.stats.hotellings_paired(A, B);
-            spmi = spm.inference(0.05);
-            disp(spmi)
-            
-            % plot
-            close all
-            spmi.plot();
-            spmi.plot_threshold_label();
-            spmi.plot_p_values();
-        end
+        function n = get_nTest(self)
+            i = unique(self.data.var);
+            n = numel(i);
+        end % ntest
+        
+        function p = get_pCorrected(self, nTest)
+            pBase = 0.05;
+            if self.correction
+                p = spm1d.util.p_critical_bonf(0.05, nTest);
+            else
+                p = pBase;
+            end
+        end % pCorrected
+        
     end % methods
     
 end % class
