@@ -77,12 +77,8 @@ classdef preprocessing < handle
                 self.var = {'thorax_X', 'thorax_Y', 'thorax_Z',...
                 'pelvis_X', 'pelvis_Y', 'pelvis_Z',...
                 'hip_X', 'hip_Y', 'hip_Z',... right
-                'hip_X', 'hip_Y', 'hip_Z',... left
                 'knee_X', 'knee_Y',... right
-                'knee_X', 'knee_Y',... left
                 'ankle_Z',... right
-                'ankle_Z',... left
-                'footprogress_Z',... right
                 'footprogress_Z'}; % left
                 [~, ~, self.ivar] = unique(self.var, 'stable');
                 
@@ -95,14 +91,10 @@ classdef preprocessing < handle
             self.data.y = [self.data.y ...
             raw.results.MeanLeg.angAtFullCycle.Thorax{1, 1}(:,1:3) ...    thorax_X, thorax_Y, thorax_Z
             raw.results.MeanLeg.angAtFullCycle.Pelvis{1, 1}(:,1:3) ...    pelvis_X, pelvis_Y, pelvis_Z
-            raw.results.Right.angAtFullCycle.RHip{1, 1}(:,1:3) ...        right hip_X, hip_Y, hip_Z
-            raw.results.Left.angAtFullCycle.LHip{1, 1}(:,1:3) ...         left hip_X, hip_Y, hip_Z
-            raw.results.Right.angAtFullCycle.RKnee{1, 1}(:,1:2) ...       right knee_X, knee_Y
-            raw.results.Left.angAtFullCycle.LKnee{1, 1}(:,1:2) ...        left knee_X, knee_Y
-            raw.results.Right.angAtFullCycle.RAnkle{1, 1}(:,3) ...        right ankle_Z
-            raw.results.Left.angAtFullCycle.LAnkle{1, 1}(:,3) ...         left ankle_Z
-            raw.results.Right.angAtFullCycle.RFootProgress{1, 1}(:,3) ... right footProgress_Z
-            raw.results.Left.angAtFullCycle.LFootProgress{1, 1}(:,3) ...  left footProgress_Z
+            raw.results.MeanLeg.angAtFullCycle.Hip{1, 1}(:,1:3) ...        right hip_X, hip_Y, hip_Z
+            raw.results.MeanLeg.angAtFullCycle.Knee{1, 1}(:,1:2) ...       right knee_X, knee_Y
+            raw.results.MeanLeg.angAtFullCycle.Ankle{1, 1}(:,3) ...        right ankle_Z
+            raw.results.MeanLeg.angAtFullCycle.FootProgress{1, 1}(:,3) ... right footProgress_Z
             ];
         
             % group

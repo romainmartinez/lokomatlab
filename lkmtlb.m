@@ -16,12 +16,14 @@ clear variables; clc; close all
 dataPath = 'Z:/Projet_Lokomat/Enfants_CP_Yosra';
 
 % data preparation & transformation
-obj = lkmtlb.preprocessing(dataPath);
+preproc = lkmtlb.preprocessing(dataPath);
 
-lkmtlb.stats(obj.data,...
+stats = lkmtlb.stats(preproc.data,...
     'correction', false,...
     'plots', true,...
     'parametric', false);
+
+% lkmtb.plot(stats.data)
 
 
 

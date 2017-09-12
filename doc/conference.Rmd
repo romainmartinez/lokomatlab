@@ -5,21 +5,21 @@ output:
   pdf_document: default
 ---
 
-| variables dépendantes        |
-|------------------------------|
-| Thorax X (*flex/ext*)        |
-| Thorax Y (*add/abd*)         |
-| Thorax Z (*rot ext/rot int*) |
-| Pelvis X (*flex/ext*) |
-| Pelvis Y (*add/abd*) |
-| Pelvis Z (*rot ext/rot int*) |
-| Hips X (*flex/ext*) |
-| Hips Y (*add/abd*) |
-| Hips Z (*rot ext/rot int*) |
-| Knee X (*flex/ext*) |
-| Knee Y (*add/abd*) |
-| Ankle Z (*rot ext/rot int*) |
-| Foot progress Z (*rot ext/rot int*) |
+| numero | variables dépendantes        |
+|--------|------------------------------|
+| 1      | Thorax X (*flex/ext*)        |
+| 2      | Thorax Y (*add/abd*)         |
+| 3      | Thorax Z (*rot ext/rot int*) |
+| 4      | Pelvis X (*flex/ext*)        |
+| 5      | Pelvis Y (*add/abd*)         |
+| 6      | Pelvis Z (*rot ext/rot int*) |
+| 7      | Hips X (*flex/ext*)          |
+| 8      | Hips Y (*add/abd*)           |
+| 9      | Hips Z (*rot ext/rot int*)   |
+| 10     | Knee X (*flex/ext*)          |
+| 11     | Knee Y (*add/abd*)           |
+| 12     | Ankle Z (*rot ext/rot int*)  |
+| 13     | Foot progress Z (*rot ext/rot int*) |
 
 ## Plan statistique "idéal"
 
@@ -44,7 +44,7 @@ Paired Hotelling’s T^2^ test suivit de post hoc (paired t-test)
 - Solution: éviter de moyenner tous les cycles de marches pour chaque sujets (augmente le nombre d'observations) et/ou baisser le nombre de variables choisies
 
 ## Paramétrique ou non-paramétrique ?
-- Un test de normalité (*Agostino-Pearson K2 test*) indique que **X des 13 variables ne suivent pas la loi normale**.
+- Un test de normalité (*Agostino-Pearson K2 test*) indique que **6 des 13 variables ne suivent pas la loi normale**.
 ![](./fig/normality.png)
 
 - De plus, considérant le faible nombre de participant ($n=13$), il conviendrait de choisir un test non-paramétrique

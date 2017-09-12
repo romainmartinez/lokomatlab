@@ -3,11 +3,11 @@
 classdef stats < handle
     
     properties (Access = private)
-        data         % data structure
         pCorrected   % corrected p
     end % private properties
     
     properties
+        data
         correction
         parametric
         plots
@@ -41,7 +41,7 @@ classdef stats < handle
             addpath('./spm8')
             
             % run hotelling test
-            %             self.hotelling
+%                         self.hotelling
             
             % run post hoc tests
             self.run_postHoc;
@@ -87,6 +87,7 @@ classdef stats < handle
             subplot(122);  snpmi.plot(); snpmi.plot_threshold_label(); snpmi.plot_p_values();
         end
         
+        %-------------------------------------------------------------------------%
         function run_postHoc(self)
             % get number of test
             nTest = self.get_nTest;
@@ -94,25 +95,32 @@ classdef stats < handle
             % get p (corrected if correction == true)
             self.pCorrected = self.get_pCorrected(nTest);
             
-            for i = 1 : nTest
+            for ivar = 1 : nTest
                 % first group
-                YA = self.data.y(:,self.data.var == i & self.data.group == 1)';
+                YA = self.data.y(:,self.data.var == ivar & self.data.group == 1)';
                 % second group
-                YB = self.data.y(:,self.data.var == i & self.data.group == 2)';
-              
+                YB = self.data.y(:,self.data.var == ivar & self.data.group == 2)';
+                
                 % 1) normality test
                 self.normality(YA, YB);
                 
                 % 2) ttest
-                self.ttest_paired(YA, YB)
+                spmi = self.ttest_paired(YA, YB);
+                
+                % 3) export
+                diff = mean(YA) - mean(YB);
+                self.export_results(spmi, ivar, diff);
+                clear spmi
             end
         end % run_postHoc
         
+        %-------------------------------------------------------------------------%
         function n = get_nTest(self)
             i = unique(self.data.var);
             n = numel(i);
         end % ntest
         
+        %-------------------------------------------------------------------------%
         function p = get_pCorrected(self, nTest)
             pBase = 0.05;
             if self.correction
@@ -122,6 +130,7 @@ classdef stats < handle
             end
         end % pCorrected
         
+        %-------------------------------------------------------------------------%
         function normality(self, YA, YB, varargin)
             spm = spm1d.stats.normality.ttest_paired(YA, YB);
             spmi = spm.inference(0.05);
@@ -135,19 +144,19 @@ classdef stats < handle
             end
         end
         
-        function ttest_paired(self, YA, YB)
+        %-------------------------------------------------------------------------%
+        function spmi = ttest_paired(self, YA, YB)
             if self.parametric
                 % parametric ttest
                 spm = spm1d.stats.ttest_paired(YA, YB);
                 spmi = spm.inference(self.pCorrected,...
-                    'two_tailed', false,...
+                    'two_tailed', true,...
                     'interp',true);
             else
                 % non-parametric ttest
-                % Control random number generation
                 spm = spm1d.stats.nonparam.ttest_paired(YA, YB);
                 spmi = spm.inference(0.05,...
-                    'two_tailed',false,...
+                    'two_tailed',true,...
                     'iterations', -1,...
                     'force_iterations', true);
             end
@@ -164,6 +173,29 @@ classdef stats < handle
                 spmi.plot_threshold_label();
                 spmi.plot_p_values();
                 title('hypothesis testing')
+            end
+        end % ttest_paired
+        
+        %-------------------------------------------------------------------------%
+        function export_results(self, spmi, ivar, diff)
+            [row, col] = size(self.data.y);
+            
+            % preallocate
+            if ~isfield(self.data, 'spm')
+                self.data.spm = nan(row, col);
+            end
+            
+            if spmi.h0reject
+                % get significant zone
+                zone = round(spmi.clusters{1, 1}.endpoints+1);
+                
+                % corresponding var
+                idx = find(self.data.var == ivar);
+                for i = idx
+                    self.data.spm(...
+                        zone(1) : zone(2),...
+                        i) = diff(zone(1):zone(2));
+                end
             end
         end
         
