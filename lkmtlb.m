@@ -13,7 +13,7 @@
 clear variables; clc; close all
 
 % dataPath = '/media/romain/E/Projet_Lokomat/Enfants_CP_Yosra';
-dataPath = 'Z:/Projet_Lokomat/Enfants_CP_Yosra';
+dataPath = '/media/romain/E/Projet_Lokomat/Enfants_CP_Yosra';
 
 % data preparation & transformation
 preproc = lkmtlb.preprocessing(dataPath);
